@@ -30,7 +30,7 @@ def parse_iostat_log(file_path, start_time, end_time, device_name):
                 data = line.split(',')
                 print(f"Line matching device '{device_name}': {line}")  # Debug: print matching line
                 print(f"Parsed data: {data}")  # Debug: print the split line data
-                await_time = float(data[4].strip())  # Assuming 'await' is the 5th column (index 4)
+                await_time = float(data[4].strip()) 
                 rtt_values.append(await_time)
     
     print(f"RTT values collected: {rtt_values}")  # Debug: print all collected RTT values
@@ -40,8 +40,8 @@ def parse_iostat_log(file_path, start_time, end_time, device_name):
 
     # Calculate average, 99th, and 95th percentiles
     avg_rtt = np.mean(rtt_values)
-    rtt_99th = np.percentile(rtt_values, 99)
-    rtt_95th = np.percentile(rtt_values, 95)
+    rtt_99th = np.percentile(rtt_values, 1)
+    rtt_95th = np.percentile(rtt_values, 5)
 
     return avg_rtt, rtt_99th, rtt_95th
 
@@ -49,7 +49,7 @@ def main():
     file_path = 'C:/Users/rushi_khc/OneDrive/Desktop/test.csv'
     start_time = '08/05/2024 02:32:00 PM'
     end_time = '08/05/2024 02:33:59 PM'
-    device_name = 'sda'  # Example device name
+    device_name = 'sda'  
 
     avg_rtt, rtt_99th, rtt_95th = parse_iostat_log(file_path, start_time, end_time, device_name)
 
