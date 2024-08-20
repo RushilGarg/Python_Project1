@@ -6,6 +6,7 @@ def parse_iostat_log(file_path, start_time, end_time, device_name):
     with open(file_path, 'r') as f:
         lines = f.readlines()
     
+    # Convert start and end times to datetime objects
     start_time = datetime.datetime.strptime(start_time, '%d/%m/%Y %I:%M:%S %p')
     end_time = datetime.datetime.strptime(end_time, '%d/%m/%Y %I:%M:%S %p')
 
@@ -13,17 +14,26 @@ def parse_iostat_log(file_path, start_time, end_time, device_name):
     current_time = None
 
     for line in lines:
-        # Match the timestamp in the iostat log
-        time_match = re.match(r'(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2} [APM]{2})', line.strip())
+        line = line.strip()
+        
+        # Match the timestamp in the iostat
+        time_match = re.match(r'(\d{2}/\d{2}/\d{4}), (\d{2}:\d{2}:\d{2} [APM]{2})', line)
         if time_match:
-            current_time = datetime.datetime.strptime(time_match.group(1), '%d/%m/%Y %I:%M:%S %p')
+            date_part = time_match.group(1)
+            time_part = time_match.group(2)
+            current_time = datetime.datetime.strptime(f'{date_part} {time_part}', '%d/%m/%Y %I:%M:%S %p')
+            print(f"Current time found: {current_time}")  # Debug: print the current timestamp found
             continue
         
         if current_time and start_time <= current_time <= end_time:
             if device_name in line:
-                data = line.split()
-                await_time = float(data[3])  # 'await' is the 4th column
+                data = line.split(',')
+                print(f"Line matching device '{device_name}': {line}")  # Debug: print matching line
+                print(f"Parsed data: {data}")  # Debug: print the split line data
+                await_time = float(data[4].strip())  # Assuming 'await' is the 5th column (index 4)
                 rtt_values.append(await_time)
+    
+    print(f"RTT values collected: {rtt_values}")  # Debug: print all collected RTT values
 
     if not rtt_values:
         raise ValueError(f"No data found for device {device_name} in the given time range.")
@@ -36,11 +46,10 @@ def parse_iostat_log(file_path, start_time, end_time, device_name):
     return avg_rtt, rtt_99th, rtt_95th
 
 def main():
-    # Example inputs
-    file_path = 'iostat.log'
+    file_path = 'C:/Users/rushi_khc/OneDrive/Desktop/test.csv'
     start_time = '08/05/2024 02:32:00 PM'
     end_time = '08/05/2024 02:33:59 PM'
-    device_name = 'sda'
+    device_name = 'sda'  # Example device name
 
     avg_rtt, rtt_99th, rtt_95th = parse_iostat_log(file_path, start_time, end_time, device_name)
 
